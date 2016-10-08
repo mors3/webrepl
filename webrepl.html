@@ -46,7 +46,7 @@
 
 <div style="display:inline-block; vertical-align:top;">
 <form>
-<input type="text" name="webrepl_url" id="url" value="ws://192.168.4.1:8266/" />
+<input type="text" name="webrepl_url" id="url" value="" />
 <input type="submit" id="button" value="Connect" onclick="button_click(); return false;" />
 </form>
 <div id="term">
@@ -95,18 +95,36 @@ function calculate_size(win) {
     return [cols, rows];
 }
 
+function getQueryStringParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
 (function() {
     window.onload = function() {
-      var size = calculate_size(self);
-      term = new Terminal({
-        cols: size[0],
-        rows: size[1],
-        useStyle: true,
-        screenKeys: true,
-        cursorBlink: false
-      });
-      term.open(document.getElementById("term"));
+        var preferredAddress = getQueryStringParameterByName("address");
+        var url = "ws://192.168.4.1:8266/";
+        if(preferredAddress !== null && preferredAddress.length > 0){
+            url = "ws://" + preferredAddress + ":8266/"
+        }
+        document.getElementById("url").value = url;
+
+        var size = calculate_size(self);
+        term = new Terminal({
+            cols: size[0],
+            rows: size[1],
+            useStyle: true,
+            screenKeys: true,
+            cursorBlink: false
+        });
+        term.open(document.getElementById("term"));
     };
+    
     window.addEventListener('resize', function() {
         var size = calculate_size(self);
         term.resize(size[0], size[1]);
